@@ -1,0 +1,24 @@
+@startuml System Squence Diagram GUI mode
+actor User
+participant "TkApp" as TK
+participant "TkPump" as TP
+participant "ChannelRegistry" as MB
+participant "Controller" as C
+participant "SimExternal" as EP
+
+loop every 50ms
+  C -> EP : poll
+  EP -> C : Envelope kpi/pose/...
+  C -> MB : publish events
+end
+
+loop every 30ms
+  TP -> MB : try_drain
+  TP -> TK : on_event -> update UI
+end
+
+User -> TK : click Start
+TK -> MB : Envelope setup
+C -> MB : drain setup
+C -> C : apply command
+@enduml

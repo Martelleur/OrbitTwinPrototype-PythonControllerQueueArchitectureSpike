@@ -1,0 +1,71 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package Application {
+  interface EventPublisher {
+    +publish(env: Envelope)
+  }
+  interface CommandInbox {
+    +drain(): Iterable<Envelope>
+  }
+  interface ExternalProcess {
+    +poll(): Envelope
+  }
+
+  class Controller {
+    -period: float
+    -thread
+    -stopFlag
+    +start()
+    +stop()
+    -run()
+    -handleCommand(env: Envelope)
+  }
+
+  Controller --> EventPublisher
+  Controller --> CommandInbox
+  Controller --> ExternalProcess
+}
+
+package Domain {
+  class Envelope {
+    +topic: string
+    +payload: any
+    +ts: float
+  }
+  class Telemetry
+  class PoseMsg
+  class Detection
+  class FrameMsg
+}
+
+package Infrastructure {
+  class Channel {
+    +put(item)
+    +get(timeout)
+    +try_drain(): Iterable
+  }
+  class ChannelRegistry {
+    +channel(name: string): Channel
+    +names(): List
+  }
+  class BusPublisher
+  class BusInbox
+  class AsyncBridge {
+    +start()
+    +stop()
+  }
+  class TkPump {
+    +tk_pump(root, reg, on_event, every_ms)
+  }
+  class SimExternal {
+    +poll(): Envelope
+  }
+
+  BusPublisher ..|> EventPublisher
+  BusInbox ..|> CommandInbox
+  SimExternal ..|> ExternalProcess
+  ChannelRegistry --> Channel
+  Channel --> Envelope
+}
+@enduml

@@ -1,0 +1,25 @@
+@startuml System Sequence Diagram - Server Mode 
+actor Client
+participant WebSocketApp as WS
+participant AsyncBridge as AB
+participant ChannelRegistry as MB
+participant Controller as C
+participant SimExternal as EP
+
+Client -> WS: CONNECT
+WS --> Client: "hello"
+
+loop every ~50ms
+  C -> EP: poll()
+  EP --> C: Envelope(kpi)
+  C -> MB: publish(kpi)
+  AB -> MB: try_drain()
+  AB --> WS: enqueue KPI
+  WS --> Client: send JSON
+end
+
+Client -> WS: text command
+WS -> MB: put Envelope(setup)
+C -> MB: drain setup
+C -> C: apply command
+@enduml

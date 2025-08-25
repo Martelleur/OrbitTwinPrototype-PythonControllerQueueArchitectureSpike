@@ -1,0 +1,51 @@
+@startuml Package Component Diagram layers
+skinparam packageStyle rectangle
+
+package "Presentation (UI)" {
+  class TkApp
+  class WebSocketApp
+}
+
+package "Application (Use Cases)" {
+  interface EventPublisher
+  interface CommandInbox
+  interface ExternalProcess
+  class Controller
+}
+
+package "Infrastructure (Adapters & Tech)" {
+  class ChannelRegistry
+  class Channel<T>
+  class BusPublisher
+  class BusInbox
+  class AsyncBridge
+  class TkPump
+  class SimExternal
+}
+
+package "Domain (Messages/DTOs)" {
+  class Envelope
+  class Telemetry
+  class PoseMsg
+  class Detection
+  class FrameMsg
+}
+
+' Dependencies (allowed arrows)
+Presentation --> Controller : uses
+Presentation ..> AsyncBridge : uses
+Presentation ..> TkPump : uses
+Controller --> EventPublisher
+Controller --> CommandInbox
+Controller --> ExternalProcess
+Controller --> Envelope
+
+' Implementations of ports (adapters)
+BusPublisher ..|> EventPublisher
+BusInbox ..|> CommandInbox
+SimExternal ..|> ExternalProcess
+
+' Infra depends on Domain
+ChannelRegistry --> Envelope
+
+@enduml
